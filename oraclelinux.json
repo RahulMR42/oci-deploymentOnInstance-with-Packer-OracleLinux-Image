@@ -1,0 +1,45 @@
+{
+    "variables": {
+        "user_ocid":"{{env `user_ocid`}}",
+        "tenancy_ocid": "{{env `tenancy_ocid`}}",
+        "fingerprint":"{{env `fingerprint`}}",
+        "private_key_path":"{{env `private_key_path`}}",
+        "availability_domain": "{{env `availability_domain`}}",
+        "region": "{{env `region`}}",
+        "base_image_ocid": "{{env `base_image_ocid`}}",
+        "compartment_ocid": "{{env `compartment_ocid`}}",
+        "subnet_ocid": "{{env `subnet_ocid`}}"
+    },  
+  
+    "builders": [
+       {
+        "user_ocid":"{{user `user_ocid`}}",
+        "tenancy_ocid": "{{user `tenancy_ocid`}}",
+        "fingerprint":"{{user `fingerprint`}}",
+        "key_file":"{{user `private_key_path`}}",
+        "availability_domain": "{{user `availability_domain`}}",
+        "region": "{{user `region`}}",
+        "base_image_ocid": "{{user `base_image_ocid`}}",
+        "compartment_ocid": "{{user `compartment_ocid`}}",
+        "image_name": "autonomous-instantclient-demo",
+        "shape": "VM.Standard2.1",
+        "ssh_username": "opc",
+        "ssh_password": "aaaaatrbfgyreyuuyreb",
+        "subnet_ocid": "{{user `subnet_ocid`}}",
+        "type": "oracle-oci"
+      }
+    ],
+    "provisioners": [
+       {
+        "type": "shell",
+        "inline": [
+          "sudo -u root yum-config-manager --add-repo  http://yum.oracle.com/repo/OracleLinux/OL7/oracle/instantclient/x86_64",
+          "sudo -u root yum -y erase oracle-instantclient18.3-basic",
+          "sudo -u root yum -y install oracle-instantclient19.5-devel     oracle-instantclient19.5-tools     oracle-instantclient19.5-jdbc     oracle-instantclient19.5-sqlplus",
+          "sqlplus -v",
+          "/usr/lib/oracle/19.5/client64/bin/imp HELP=Y"
+        ],
+        "pause_before": "5s"
+       }
+    ]
+  }

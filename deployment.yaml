@@ -1,0 +1,40 @@
+version: 1.0
+component: deployment
+env:
+
+files:
+  # This section is to define how the files in the artifact shall 
+  # be put on the compute instance
+  - source: /
+    destination: /tmp
+steps:
+  # This section is to define the scripts that each step shall run on the instance after file copy.
+  - stepType: Command
+    name: Reading from Local artifact
+    command: |
+      mkdir -p /tmp/packer
+      cd  /tmp/packer
+      python3 -m pip install --user oci-cli
+      export OCI_CLI_AUTH=instance_principal
+      export PATH=$PATH:~/.local/bin/
+      oci artifacts generic artifact download --artifact-id ${ARTIFACT_VERSIONED_ID} --file packer_bundle.zip
+      oci artifacts generic artifact download --artifact-id ${CLIENT_JSON_VERSIONED_ID} --file oraclelinux.json
+      oci artifacts generic artifact download --artifact-id ${PEMFILE_OCID} --file key_file
+    
+    timeoutInSeconds: 600
+
+  - stepType: Command
+    name: Packer stage
+    command: |
+      cd /tmp/packer
+      unzip packer_bundle
+      export private_key_path="key_file"
+      export user_ocid=${user_ocid}
+      export tenancy_ocid=${tenancy_ocid}
+      export fingerprint=${fingerprint}
+      export availability_domain=${availability_domain}
+      export subnet_ocid=${subnet_ocid}
+      export base_image_ocid=${base_image_ocid}
+      ./packer build oraclelinux.json
+          
+    timeoutInSeconds: 600
